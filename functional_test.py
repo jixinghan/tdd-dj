@@ -12,6 +12,11 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
+    def check_for_item_in_list_table(self, item_text):
+        table = self.browser.find_element_by_id('id_list_table')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(item_text, [row.text for row in rows])
+
     def test_can_start_a_list_and_retrieve_it_later(self):
         # Edith has heard about a cool new online to-do app. she goes
         # to check out its homepage
@@ -37,13 +42,7 @@ class NewVisitorTest(unittest.TestCase):
         input_box.send_keys(Keys.ENTER)
         time.sleep(1)
 
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
-        #self.assertTrue(
-        #    any(row.text == '1: Buy peacock feathers' for row in rows),
-        #    f'New to-do item do not appear in table. Contents were:\n{table.text}'
-        #)
+        self.check_for_item_in_list_table('1: Buy peacock feathers')
 
         # There is still a  text box inviting her to add another item. She
         # then enters "Use peacock feathers to make a fly" (Edith is very methodical)
@@ -53,12 +52,9 @@ class NewVisitorTest(unittest.TestCase):
         time.sleep(1)
 
         # The page updates again, and now show both items on her list
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn('1: Buy peacock feathers', [row.text for row in rows])
-        self.assertIn(
-            '2: Use peacock feathers to make a fly', [row.text for row in rows]
-        )
+        self.check_for_item_in_list_table('1: Buy peacock feathers')
+        self.check_for_item_in_list_table('2: Use peacock feathers to make a fly')
+
         self.fail('Finish the test')
 
         # Edith wonders whether the site still remembers her lists. Then she sees
