@@ -10,6 +10,38 @@ class HomePageTest(TestCase):
         response = self.client.get('/')
         self.assertTemplateUsed(response, 'lists/home.html')
 
+    def test_only_saves_items_when_send_a_post_request(self):
+        self.client.get('/')
+        self.assertEqual(Item.objects.count(), 0)
+
+    def test_can_save_post_request_data_into_database(self):
+        response = self.client.post('/', data={'item_text': 'A new list item'})
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'A new list item')
+
+    def test_redirects_after_post_request(self):
+        response = self.client.post('/', data={'item_text': 'A new list item'})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
+
+class ListViewTest(TestCase):
+    def test_uses_list_template(self):
+        response = self.client.get('/lists/the-only-list-in-the-world/')
+        self.assertTemplateUsed(response, 'lists/list.html')
+
+    def test_displays_all_items(self):
+        # Assume we have a set of items
+        item1 = Item.objects.create(text='item 1')
+        item2 = Item.objects.create(text='item 2')
+        # When client sends a request...
+        response = self.client.get('/lists/the-only-list-in-the-world/')
+        # all these items should be in the response
+        self.assertContains(response, item1.text)
+        self.assertContains(response, item2.text)
+
+class ItemModelTest(TestCase):
     def test_saving_and_retrieving_items(self):
         first_item = Item()
         first_item.text = 'The first (ever) list item'
@@ -27,28 +59,3 @@ class HomePageTest(TestCase):
         self.assertEqual(first_saved_item.text, 'The first (ever) list item')
         self.assertEqual(second_saved_item.text, 'Item the second')
 
-    def test_only_saves_items_when_send_a_post_request(self):
-        self.client.get('/')
-        self.assertEqual(Item.objects.count(), 0)
-
-    def test_can_save_post_request_data_into_database(self):
-        response = self.client.post('/', data={'item_text': 'A new list item'})
-
-        self.assertEqual(Item.objects.count(), 1)
-        new_item = Item.objects.first()
-        self.assertEqual(new_item.text, 'A new list item')
-
-    def test_redirects_after_post_request(self):
-        response = self.client.post('/', data={'item_text': 'A new list item'})
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
-
-    def test_displays_all_list_items(self):
-        # Assume we have a set of items
-        item1 = Item.objects.create(text='item 1')
-        item2 = Item.objects.create(text='item 2')
-        # When client sends a request...
-        response = self.client.get('/')
-        # all these items should be in the response
-        self.assertIn(item1.text, response.content.decode())
-        self.assertIn(item2.text, response.content.decode())
