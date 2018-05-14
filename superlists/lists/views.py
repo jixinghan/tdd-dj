@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
 
-from lists.models import Item
+from lists.models import Item, List
 
 
 ## data-representation-view should use a template to render response
@@ -17,5 +17,6 @@ def list_page(request):
 ## 1) save data into database
 ## 2) redirect to a data-representation-view
 def create_new_list(request):
-    Item.objects.create(text=request.POST['item_text'])
+    list_ = List.objects.create()
+    Item.objects.create(text=request.POST['item_text'], list=list_)
     return redirect('/lists/the-only-list-in-the-world/')
