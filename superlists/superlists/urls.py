@@ -23,5 +23,6 @@ urlpatterns = [
 
     url(r'^$', views.home_page, name='home_page'),
     url(r'^lists/create-new$', views.create_new_list, name='create_new_list'),
-    url(r'^lists/the-only-list-in-the-world/$', views.list_page, name='list_page'),
+    url(r'^lists/(\d+)/$', views.list_page, name='list_page'),
+    url(r'^lists/(\d+)/add-item$', views.add_item, name='add_items'),
 ]

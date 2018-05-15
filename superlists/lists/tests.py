@@ -3,31 +3,45 @@ from django.test import TestCase
 from lists.views import home_page
 from lists.models import Item, List
 
-## view functions related tests ==============================================
+## related with 'home_page' func view
 class HomePageViewTest(TestCase):
 
     def test_use_home_template(self):
         response = self.client.get('/')
         self.assertTemplateUsed(response, 'lists/home.html')
 
+## related with 'list_page' func view
 class ListPageViewTest(TestCase):
 
     def test_uses_list_template(self):
-        response = self.client.get('/lists/the-only-list-in-the-world/')
+        list_ = List.objects.create()
+        response = self.client.get(f'/lists/{list_.id}/')
         self.assertTemplateUsed(response, 'lists/list.html')
 
-    def test_displays_all_items(self):
-        # Assume we have a set of items
+    def test_displays_only_items_for_the_specific_list(self):
+        # Assume we have several items associated to a list
         list_ = List.objects.create()
         item1 = Item.objects.create(text='item 1', list=list_)
         item2 = Item.objects.create(text='item 2', list=list_)
-        # When client sends a request...
-        response = self.client.get('/lists/the-only-list-in-the-world/')
-        # all these items should be in the response
+        # Assume we have several items associated to another list
+        another_list = List.objects.create()
+        another_item1 = Item.objects.create(text='another 1', list=another_list)
+        another_item2 = Item.objects.create(text='another 2', list=another_list)
+        # When sends a request for a specific list
+        response = self.client.get(f'/lists/{list_.id}/')
+        # all the items associated with that list should be in the response
         self.assertContains(response, item1.text)
         self.assertContains(response, item2.text)
+        self.assertNotContains(response, another_item1.text)
+        self.assertNotContains(response, another_item2.text)
 
-class CreateNewListViewTest(TestCase):
+    def test_pass_correct_list_to_template(self):
+        correct_list = List.objects.create()
+        response = self.client.get(f'/lists/{correct_list.id}/')
+        self.assertEqual(response.context['list'], correct_list)
+
+## related with 'create_new_list' func view
+class NewListViewTest(TestCase):
 
     def test_can_save_post_request_data_into_database(self):
         response = self.client.post(
@@ -43,9 +57,36 @@ class CreateNewListViewTest(TestCase):
         )
         #self.assertEqual(response.status_code, 302)
         #self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
-        self.assertRedirects(response, '/lists/the-only-list-in-the-world/')
+        new_list = List.objects.first()
+        self.assertRedirects(response, f'/lists/{new_list.id}/')
 
-## model related tests =======================================================
+## related with 'add_item' func view
+class NewItemViewTest(TestCase):
+    
+    def test_can_save_a_item_in_a_post_reqeust_to_a_correct_existing_list(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        self.client.post(
+            f'/lists/{correct_list.id}/add-item',
+            data = {'item_text': 'A new item for an existing list'}
+        )
+
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'A new item for an existing list')
+        self.assertEqual(new_item.list, correct_list)
+
+    def test_redirects_to_a_correct_list_view(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+
+        response = self.client.post(
+            f'/lists/{correct_list.id}/add-item',
+            data = {'item_text': 'A new item for an existing list'}
+        )
+        self.assertRedirects(response, f'/lists/{correct_list.id}/')
+
 class ListAndItemModelsTest(TestCase):
 
     def test_saving_and_retrieving_items(self):
