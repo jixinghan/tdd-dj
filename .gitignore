@@ -1,5 +1,4 @@
 .env/
 *.swp
 db.sqlite3
-test-requirements.txt
 __pycache__/
