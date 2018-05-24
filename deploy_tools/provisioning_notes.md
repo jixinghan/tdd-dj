@@ -45,6 +45,7 @@ After we'v installed python, the remaining is easy
   to reload the systemd configuration
 * Enable the service
     sudo systemctl enable gunicorn.service
+    sudo systemctl start gunicorn.service
 
 ## Folder structure
 Assume we have a user accont at /home/username, our site structure may looks like below
