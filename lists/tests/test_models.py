@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from lists.models import Item, List
@@ -32,3 +33,18 @@ class ListAndItemModelsTest(TestCase):
         self.assertEqual(second_saved_item.text, 'Item the second')
         self.assertEqual(second_saved_item.list, list_)
 
+    def test_saving_empty_list_items_results_in_validation_error(self):
+        list_ = List.objects.create()
+        item = Item(list=list_, text='')
+        #try:
+        #    item.save()
+        #    item.full_clean()
+        #except Exception as e:
+        #    self.assertTrue(isinstance(e, ValidationError))
+        #else:
+        #    raise AssertionError
+        with self.assertRaises(ValidationError):
+            item.full_clean()
+            item.save()
+        self.assertEqual(List.objects.count(), 1)
+        self.assertEqual(Item.objects.count(), 0)
