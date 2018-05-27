@@ -12,9 +12,22 @@ def home_page(request):
 ## data-representation-view should use a template to render response
 def list_page(request, list_id):
     list_ = List.objects.get(id=list_id)
+
     if request.method == 'POST':
-        Item.objects.create(text=request.POST['item_text'], list=list_)
-        return redirect(f'/lists/{list_.id}/')
+        item = Item(text=request.POST['item_text'], list=list_)
+        try: 
+            item.full_clean()
+        except ValidationError:
+            error = "You can't have an empty list item"
+            return render(
+                request,
+                'lists/list.html',
+                {'list': list_, 'error': error}
+            )
+        else:
+            item.save()
+            return redirect(f'/lists/{list_.id}/')
+
     return render(request, 'lists/list.html', {'list': list_})
 
 ## date-manipulation-view should bascilly do two things:

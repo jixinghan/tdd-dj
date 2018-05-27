@@ -65,6 +65,17 @@ class ListPageViewTest(TestCase):
             data = {'item_text': 'A new item for an existing list'}
         )
         self.assertRedirects(response, f'/lists/{correct_list.id}/')
+    
+    def test_validation_errors_end_up_on_list_page(self):
+        list_ = List.objects.create()
+        response = self.client.post(
+            f'/lists/{list_.id}/',
+            data = {'item_text': ''}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'lists/list.html')
+        expected_error_msg = escape("You can't have an empty list item")
+        self.assertContains(response, expected_error_msg)
 
 
 ## related with 'create_new_list' func view
@@ -101,8 +112,3 @@ class NewListViewTest(TestCase):
         self.client.post('/lists/create-new', data={'item_text': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
-
-
-## related with 'add_item' func view
-class NewItemViewTest(TestCase):
-    pass
