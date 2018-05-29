@@ -53,7 +53,7 @@ class ListPageViewTest(TestCase):
 
         self.client.post(
             f'/lists/{correct_list.id}/',
-            data = {'item_text': 'A new item for an existing list'}
+            data = {'text': 'A new item for an existing list'}
         )
 
         self.assertEqual(Item.objects.count(), 1)
@@ -67,7 +67,7 @@ class ListPageViewTest(TestCase):
 
         response = self.client.post(
             f'/lists/{correct_list.id}/',
-            data = {'item_text': 'A new item for an existing list'}
+            data = {'text': 'A new item for an existing list'}
         )
         self.assertRedirects(response, f'/lists/{correct_list.id}/')
     
@@ -75,7 +75,7 @@ class ListPageViewTest(TestCase):
         list_ = List.objects.create()
         response = self.client.post(
             f'/lists/{list_.id}/',
-            data = {'item_text': ''}
+            data = {'text': ''}
         )
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'lists/list.html')
@@ -88,7 +88,7 @@ class NewListViewTest(TestCase):
 
     def test_can_save_post_request_data_into_database(self):
         response = self.client.post(
-            '/lists/create-new', data={'item_text': 'A new list item'}
+            '/lists/create-new', data={'text': 'A new list item'}
         )
         self.assertEqual(Item.objects.count(), 1)
         new_item = Item.objects.first()
@@ -96,7 +96,7 @@ class NewListViewTest(TestCase):
 
     def test_redirects_after_post_request(self):
         response = self.client.post(
-            '/lists/create-new', data={'item_text': 'A new list item'}
+            '/lists/create-new', data={'text': 'A new list item'}
         )
         #self.assertEqual(response.status_code, 302)
         #self.assertEqual(response['location'], '/lists/the-only-list-in-the-world/')
@@ -106,7 +106,7 @@ class NewListViewTest(TestCase):
     # When entered an empty item in input box at homepage,
     # an error message should be displayed at current page
     def test_validation_errors_are_sent_back_to_home_page_template(self):
-        response = self.client.post('/lists/create-new', data={'item_text': ''})
+        response = self.client.post('/lists/create-new', data={'text': ''})
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'lists/home.html')
         expected_error = escape("You can't have an empty list item")
@@ -114,6 +114,6 @@ class NewListViewTest(TestCase):
         self.assertIn(expected_error, response.content.decode())
 
     def test_invalid_empty_list_item_arent_saved(self):
-        self.client.post('/lists/create-new', data={'item_text': ''})
+        self.client.post('/lists/create-new', data={'text': ''})
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
