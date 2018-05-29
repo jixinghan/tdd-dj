@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.utils.html import escape
 
 from lists.models import Item, List
+from lists.forms import ItemForm
 
 
 ## related with 'home_page' func view
@@ -11,6 +12,10 @@ class HomePageViewTest(TestCase):
         response = self.client.get('/')
         self.assertTemplateUsed(response, 'lists/home.html')
 
+    def test_home_page_uses_item_form(self):
+        response = self.client.get('/')
+        self.assertIsInstance(response.context['form'], ItemForm)
+    
 
 ## related with 'list_page' func view
 class ListPageViewTest(TestCase):

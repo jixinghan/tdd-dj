@@ -3,11 +3,12 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from lists.models import Item, List
+from lists.forms import ItemForm
 
 
 ## data-representation-view should use a template to render response
 def home_page(request):
-    return render(request, 'lists/home.html')
+    return render(request, 'lists/home.html', {'form': ItemForm()})
 
 ## data-representation-view should use a template to render response
 def list_page(request, list_id):
