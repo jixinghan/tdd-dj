@@ -19,3 +19,12 @@ class ItemFormTest(TestCase):
         form = ItemForm(data={'text': ''})
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['text'], [EMPTY_ITEM_ERROR])
+        #print(form)
+        #print(form.errors)
+        #print(form['text'])
+        #print(form['text'].errors)
+
+        # It's trick that you should use 'form.text.errors' in django's
+        # template system instead of syntax-correct "form['text'].errors"
+        self.assertEqual(form['text'].errors, form.errors['text'])
+
